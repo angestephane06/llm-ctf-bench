@@ -56,13 +56,16 @@ class CampaignConfig(_Strict):
 
 
 def load_config(path: str | Path) -> CampaignConfig:
-    """Read a campaign YAML. Relative paths are resolved against the YAML's directory parent."""
+    """Read a campaign YAML. Relative paths are resolved against the project root (the nearest
+    folder above the YAML that holds a pyproject.toml), so a config can live in any subfolder
+    and be run from any working directory."""
     path = Path(path)
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
         raise ValueError(f"{path}: expected a mapping at top level")
     config = CampaignConfig.model_validate(raw)
-    root = path.resolve().parent.parent
+    here = path.resolve().parent
+    root = next((d for d in (here, *here.parents) if (d / "pyproject.toml").exists()), here)
     updates = {}
     for key in ("tasks_dir", "output_dir"):
         value: Path = getattr(config, key)

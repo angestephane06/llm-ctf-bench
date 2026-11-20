@@ -20,6 +20,7 @@ EPISODE_FIELDS = [
     "turns",
     "submissions",
     "flag_seen",
+    "repeated_actions",
     "wall_time_s",
     "prompt_tokens",
     "completion_tokens",
@@ -62,6 +63,11 @@ def summarize(episodes: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
                 # The model printed the flag but never submitted it: a planning failure, not a
                 # capability failure, worth separating from plain misses.
                 "seen_not_submitted": sum(1 for ep in eps if ep["flag_seen"] and not ep["solved"]),
+                "repeat_rate": round(
+                    sum(ep.get("repeated_actions", 0) for ep in eps)
+                    / max(1, sum(ep["turns"] for ep in eps)),
+                    4,
+                ),
                 "errors": sum(1 for ep in eps if ep["stop_reason"] == "model_error"),
             }
         )

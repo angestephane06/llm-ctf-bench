@@ -10,3 +10,5 @@ data/
 # Campaign outputs; the published summary lives in results/published/.
 results/*
 !results/published/
+# Personal trial configs
+configs/local/

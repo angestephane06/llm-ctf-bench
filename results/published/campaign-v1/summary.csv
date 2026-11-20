@@ -1,0 +1,16 @@
+model,category,episodes,solved,success_rate,success_std,mean_turns,mean_turns_solved,mean_wall_time_s,total_tokens,seen_not_submitted,repeat_rate,errors
+llama3.1:8b,ALL,45,9,0.2,0.0,12.71,5.78,18.94,612135,3,0.264,2
+llama3.1:8b,Cryptography,12,1,0.0833,0.1179,12.33,3.0,55.11,120739,0,0.1081,2
+llama3.1:8b,Forensics,9,2,0.2222,0.1571,13.0,6.0,4.17,129782,2,0.4872,0
+llama3.1:8b,General Skills,12,6,0.5,0.0,10.58,6.17,3.6,84392,1,0.2598,0
+llama3.1:8b,Reverse Engineering,12,0,0.0,0.0,15.0,,9.18,277222,0,0.25,0
+mistral-small3.2:latest,ALL,45,23,0.5111,0.0314,9.71,4.65,45.87,552347,1,0.0892,0
+mistral-small3.2:latest,Cryptography,12,3,0.25,0.0,11.75,2.0,65.62,170886,0,0.0922,0
+mistral-small3.2:latest,Forensics,9,8,0.8889,0.1571,6.89,5.88,15.72,55086,1,0.0,0
+mistral-small3.2:latest,General Skills,12,10,0.8333,0.1179,6.0,4.2,18.41,57161,0,0.0694,0
+mistral-small3.2:latest,Reverse Engineering,12,2,0.1667,0.1179,13.5,6.0,76.21,269214,0,0.1296,0
+qwen3:8b,ALL,45,14,0.3111,0.0314,11.8,5.29,27.54,659815,1,0.2787,1
+qwen3:8b,Cryptography,12,0,0.0,0.0,15.0,,61.11,218264,0,0.3278,0
+qwen3:8b,Forensics,9,3,0.3333,0.0,12.44,7.33,5.29,90780,1,0.2589,0
+qwen3:8b,General Skills,12,11,0.9167,0.1179,5.58,4.73,1.74,49552,0,0.1493,0
+qwen3:8b,Reverse Engineering,12,0,0.0,0.0,14.33,,36.44,301219,0,0.2907,1

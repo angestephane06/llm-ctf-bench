@@ -29,13 +29,23 @@ def _slug(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", name)
 
 
-def _git_commit() -> str | None:
+def _git(*args: str) -> str | None:
     try:
         return subprocess.run(
-            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+            ["git", *args], capture_output=True, text=True, check=True
         ).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return None
+
+
+def _git_state() -> dict[str, Any]:
+    """Commit of the code that ran, and whether it had uncommitted changes: a commit hash
+    alone would silently describe code that differs from what produced the results."""
+    status = _git("status", "--porcelain", "--untracked-files=no")
+    return {
+        "git_commit": _git("rev-parse", "HEAD"),
+        "git_dirty": bool(status) if status is not None else None,
+    }
 
 
 def docker_sandbox_factory(config: CampaignConfig) -> SandboxFactory:
@@ -64,7 +74,7 @@ def run_campaign(
         "campaign": config.name,
         "started_at": datetime.now(UTC).isoformat(),
         "ctfbench_version": __version__,
-        "git_commit": _git_commit(),
+        **_git_state(),
         "python": platform.python_version(),
         "config": config.model_dump(mode="json"),
         "models": [],

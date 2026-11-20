@@ -1,0 +1,103 @@
+# Installs the benchmark on a fresh Ubuntu 24.04 machine: Docker, Ollama, the models of the
+# campaign, the Python environment and the sandbox image.
+#
+#   ansible-playbook -i ansible/inventory.example.ini ansible/playbook.yml
+#
+# GPU drivers are out of scope: install the NVIDIA driver (and, on bare metal, the NVIDIA
+# container stack if needed) beforehand. Ollama falls back to CPU without them.
+- name: Install llm-ctf-bench
+  hosts: bench
+  become: true
+  vars:
+    bench_user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
+    bench_dir: "/home/{{ bench_user }}/llm-ctf-bench"
+    bench_repo: https://github.com/angestephane06/llm-ctf-bench.git
+    bench_version: main
+    ollama_models:
+      - qwen3:8b
+      - llama3.1:8b
+      - mistral-small3.2:latest
+
+  tasks:
+    - name: System packages
+      ansible.builtin.apt:
+        name: [docker.io, docker-buildx, git, make, python3-venv, curl, zstd]
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Docker daemon is running and enabled
+      ansible.builtin.systemd_service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Benchmark user can use Docker
+      ansible.builtin.user:
+        name: "{{ bench_user }}"
+        groups: docker
+        append: true
+
+    - name: Check whether Ollama is installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/ollama
+      register: ollama_binary
+
+    - name: Download the official Ollama installer
+      ansible.builtin.get_url:
+        url: https://ollama.com/install.sh
+        dest: /tmp/ollama-install.sh
+        mode: "0755"
+      when: not ollama_binary.stat.exists
+
+    - name: Install Ollama
+      ansible.builtin.command: /tmp/ollama-install.sh
+      args:
+        creates: /usr/local/bin/ollama
+      when: not ollama_binary.stat.exists
+
+    - name: Ollama service is running and enabled
+      ansible.builtin.systemd_service:
+        name: ollama
+        state: started
+        enabled: true
+
+    - name: Pull the campaign models
+      ansible.builtin.command: "ollama pull {{ item }}"
+      loop: "{{ ollama_models }}"
+      register: pull
+      changed_when: "'pulling' in pull.stderr"
+      become: false
+
+    - name: Clone the benchmark
+      ansible.builtin.git:
+        repo: "{{ bench_repo }}"
+        dest: "{{ bench_dir }}"
+        version: "{{ bench_version }}"
+      become: true
+      become_user: "{{ bench_user }}"
+
+    - name: Python environment
+      ansible.builtin.command: make setup
+      args:
+        chdir: "{{ bench_dir }}"
+        creates: "{{ bench_dir }}/.venv/bin/ctfbench"
+      become: true
+      become_user: "{{ bench_user }}"
+
+    - name: Sandbox image and tasks
+      # `sg docker` gives the new group membership to this command without a new login.
+      ansible.builtin.command: sg docker -c "make image fetch"
+      args:
+        chdir: "{{ bench_dir }}"
+      changed_when: false
+      become: true
+      become_user: "{{ bench_user }}"
+
+    - name: Unit and sandbox tests pass
+      ansible.builtin.command: sg docker -c "make test test-docker"
+      args:
+        chdir: "{{ bench_dir }}"
+      changed_when: false
+      become: true
+      become_user: "{{ bench_user }}"

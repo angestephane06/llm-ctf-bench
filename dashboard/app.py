@@ -39,7 +39,7 @@ st.subheader("By category")
 by_cat = summary[summary["category"] != "ALL"].pivot(
     index="category", columns="model", values="success_rate"
 )
-st.dataframe(by_cat.style.format("{:.0%}"), use_container_width=True)
+st.dataframe(by_cat.style.format("{:.0%}"), width="stretch")
 
 st.subheader("Cost and behaviour")
 st.dataframe(
@@ -53,7 +53,7 @@ st.dataframe(
             "errors",
         ]
     ],
-    use_container_width=True,
+    width="stretch",
 )
 
 st.subheader("Trace viewer")

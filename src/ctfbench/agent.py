@@ -91,6 +91,8 @@ class Episode:
     submissions: int = 0
     # The flag appeared in a command output even if the model never submitted it.
     flag_seen: bool = False
+    # Actions identical to the previous one: a model stuck in a loop on the same error.
+    repeated_actions: int = 0
     wall_time_s: float = 0.0
     prompt_tokens: int = 0
     completion_tokens: int = 0
@@ -129,6 +131,11 @@ def run_episode(
             break
 
         action = parse_action(completion.text)
+        if episode.steps and (episode.steps[-1].action, episode.steps[-1].content) == (
+            action.kind,
+            action.content,
+        ):
+            episode.repeated_actions += 1
         step = Step(
             turn=turn,
             reply=completion.text,

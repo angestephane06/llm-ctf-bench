@@ -99,6 +99,14 @@ make eval         # full campaign: 3 models x 15 tasks x 3 seeds
 make dashboard    # compare models, replay traces
 ```
 
+To provision a fresh Ubuntu 24.04 machine (Docker, Ollama, models, environment, sandbox image,
+tests) instead:
+
+```bash
+pip install ansible-core
+ansible-playbook -i ansible/inventory.example.ini ansible/playbook.yml
+```
+
 A campaign is entirely described by its YAML file (models, tasks, seeds, temperature, limits,
 sandbox resources) and is resumable: finished episodes are kept, so `make eval` after an
 interruption only runs what is missing. Each campaign directory holds `metadata.json` (config,
@@ -107,7 +115,43 @@ git commit, exact Ollama model digests), one JSON trace per episode, `episodes.c
 
 ## Results
 
-*To be filled in from `results/published/` once the reference campaign has run.*
+Reference campaign `campaign-v1` ([`configs/campaign.yaml`](configs/campaign.yaml)): 3 models
+x 15 tasks x 3 seeds = 135 episodes, temperature 0.2, at most 15 turns per episode, run in
+76 minutes on a single RTX 5070 Ti (16 GB). Raw data: [`results/published/campaign-v1/`](results/published/campaign-v1/).
+
+| Model | Solved | General Skills | Forensics | Cryptography | Reverse | Turns when solved | Repeated actions |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| mistral-small3.2 (24B) | **23/45 (51 %)** | 10/12 | 8/9 | 3/12 | 2/12 | 4.7 | 9 % |
+| qwen3:8b (no thinking) | 14/45 (31 %) | 11/12 | 3/9 | 0/12 | 0/12 | 5.3 | 28 % |
+| llama3.1:8b | 9/45 (20 %) | 6/12 | 2/9 | 1/12 | 0/12 | 5.8 | 26 % |
+
+"Repeated actions" is the share of turns where the model sent exactly the same action as on
+the previous turn. The standard deviation of the success rate across the three seeds is at
+most 3 points for every model.
+
+What the campaign shows:
+
+- **Size dominates.** The 24B model solves about twice as many tasks as the two 8B models, and
+  is the only one to solve reverse-engineering tasks at all.
+- **The 8B models fail by looping, not by ignorance.** They pick sensible tools, but after an
+  error they resend the identical command in more than a quarter of their turns (against 9 %
+  for the 24B model). On the ROT13 task, qwen3 misspelled the `tr` ranges, then replayed the
+  same broken command until the turn limit.
+- **Single-command tasks are solved, multi-step ones are not.** All models solve the tasks
+  where one command reveals the flag (tasks 4 and 37: 9/9). Six tasks are solved by no model
+  in any seed: the custom Caesar variant and Vigenère (72, 80), weak RSA (12), and three
+  reverse tasks that require tracing Python or assembly code (0, 15, 77).
+- **Seeds barely matter at this temperature,** but with 15 tasks one task is worth 6.7
+  points: differences smaller than about 10 points between two models are not meaningful.
+
+Three episodes (2 for llama3.1, 1 for qwen3) ended because a single reply was still being
+generated after the 300 s client timeout, i.e. the model kept generating without stopping.
+They are counted as failures (`stop_reason: model_error`).
+
+Reproducibility note: `metadata.json` records the exact model digests. Its `git_commit`
+field points to the parent commit, because this campaign ran before the agent-loop changes of
+the following commit were committed; the agent, sandbox and scoring code that ran is the one
+of the commit that adds these results. Later campaigns also record a `git_dirty` flag to make that explicit.
 
 ## Limitations
 

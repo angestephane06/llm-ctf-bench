@@ -55,6 +55,7 @@ def test_stops_at_max_turns_and_records_flag_seen(task: Task) -> None:
     ep = run_episode(task, model, shell, Limits(max_turns=4), seed=0, temperature=0.0)
     assert not ep.solved and ep.stop_reason == "max_turns" and ep.turns == 4
     assert ep.flag_seen  # printed but never submitted
+    assert ep.repeated_actions == 3  # the same command four times in a row
 
 
 def test_invalid_reply_gets_a_reminder(task: Task) -> None:

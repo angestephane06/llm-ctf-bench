@@ -15,6 +15,7 @@ dependencies = [
 [project.optional-dependencies]
 dashboard = ["streamlit>=1.38", "pandas>=2.2"]
 dev = ["pytest>=8.3", "ruff>=0.6", "mypy>=1.11", "types-PyYAML", "types-docker"]
+ops = ["ansible-core>=2.17", "ansible-lint>=24.0"]
 
 [project.scripts]
 ctfbench = "ctfbench.cli:main"
