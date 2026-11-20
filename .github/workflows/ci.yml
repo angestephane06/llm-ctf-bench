@@ -8,8 +8,8 @@ jobs:
   lint-test:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install uv && uv pip install --system -e ".[dev]"
@@ -24,15 +24,15 @@ jobs:
     runs-on: ubuntu-24.04
     needs: lint-test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install uv && uv pip install --system -e ".[dev]"
       - run: docker build -f docker/sandbox.Dockerfile -t ctfbench-sandbox:latest .
       - run: pytest -m docker -q
       - run: python -m ctfbench run configs/smoke.yaml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: smoke-results
           path: results/smoke/
