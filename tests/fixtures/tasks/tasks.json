@@ -1,0 +1,9 @@
+[
+  {
+    "task_id": 1,
+    "query": "A note was left in the challenge folder. Read it and submit the flag.",
+    "flag": "flag{smoke_test}",
+    "category": "Fixture",
+    "source": "written for this repository"
+  }
+]

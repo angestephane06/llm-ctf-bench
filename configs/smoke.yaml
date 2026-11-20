@@ -1,0 +1,20 @@
+# CI smoke campaign: a scripted model (no GPU) on a fixture task, in the real Docker sandbox.
+name: smoke
+models:
+  - name: scripted-solver
+    provider: scripted
+    replies:
+      - "Let me look around.\n```bash\nls -la && cat note.txt\n```"
+      - "SUBMIT: flag{smoke_test}"
+  - name: scripted-idle
+    provider: scripted
+    replies:
+      - "I am not sure what to do."
+tasks: all
+seeds: [0, 1]
+tasks_dir: tests/fixtures/tasks
+output_dir: results
+limits:
+  max_turns: 3
+  command_timeout_s: 10
+  task_timeout_s: 60

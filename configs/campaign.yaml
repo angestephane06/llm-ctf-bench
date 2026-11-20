@@ -1,0 +1,23 @@
+# Main campaign: 3 local models x 15 InterCode-CTF tasks x 3 seeds = 135 episodes.
+name: campaign-v1
+models:
+  - name: qwen3:8b
+    think: false    # all three models answer directly; reasoning mode is a separate study
+  - name: llama3.1:8b
+  - name: mistral-small3.2:latest
+tasks: all          # the 15 tasks of tasks/manifest.yaml
+seeds: [0, 1, 2]
+temperature: 0.2    # > 0 so that seeds give independent attempts; same for every model
+ollama_url: http://localhost:11434
+tasks_dir: data/tasks
+output_dir: results
+limits:
+  max_turns: 15
+  command_timeout_s: 30
+  task_timeout_s: 600
+  output_chars: 2000
+sandbox:
+  image: ctfbench-sandbox:latest
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128

@@ -1,0 +1,35 @@
+# Subset of InterCode-CTF used by this benchmark.
+#
+# Upstream: InterCode (Yang et al., 2023), MIT license, tasks collected from picoCTF.
+# The picoCTF challenge files are NOT redistributed in this repository: `python -m ctfbench
+# fetch-tasks` downloads them from the pinned upstream commit below.
+#
+# Selection rule: every task must be solvable offline, from its files alone. Tasks that need
+# `nc` to a picoCTF server, a URL, or a custom setup step were excluded, which removes the
+# Binary Exploitation and Web Exploitation categories (they all require a remote service).
+upstream:
+  repo: https://github.com/princeton-nlp/intercode
+  commit: c3e46d827cfc9d4c704ec078f7abf9f41e3191d8
+  index: data/ctf/ic_ctf.json
+  assets: data/ctf/task_assets
+
+tasks:
+  # General Skills
+  - 4    # flag in plain sight
+  - 21   # strings on a binary
+  - 30   # password check script
+  - 37   # find a file in a zip archive
+  # Reverse Engineering
+  - 0    # unpack an obfuscated Python script
+  - 15   # crackme.py
+  - 47   # VaultDoor4.java, ASCII-encoded password
+  - 77   # reason about an ARM assembly listing
+  # Cryptography
+  - 5    # ROT13
+  - 12   # RSA with a weak modulus
+  - 72   # custom Caesar-like cipher
+  - 80   # Vigenere with a given key
+  # Forensics
+  - 8    # metadata hidden in a JPEG
+  - 61   # needle in a large text file
+  - 65   # strings in a gzipped disk image

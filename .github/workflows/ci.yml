@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install uv && uv pip install --system -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy
+      - run: pytest -m "not docker" -q
+
+  sandbox:
+    # The real sandbox on the runner's Docker: network isolation, unprivileged user,
+    # command timeout, cleanup, then a smoke campaign with scripted models (no GPU).
+    runs-on: ubuntu-24.04
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install uv && uv pip install --system -e ".[dev]"
+      - run: docker build -f docker/sandbox.Dockerfile -t ctfbench-sandbox:latest .
+      - run: pytest -m docker -q
+      - run: python -m ctfbench run configs/smoke.yaml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: results/smoke/

@@ -1,0 +1,38 @@
+# GitLab equivalent of .github/workflows/ci.yml.
+stages: [lint-test, sandbox]
+
+default:
+  image: python:3.12-slim
+
+.install: &install
+  - pip install -q uv
+  - uv pip install --system -e ".[dev]"
+
+lint-test:
+  stage: lint-test
+  script:
+    - *install
+    - ruff check .
+    - ruff format --check .
+    - mypy
+    - pytest -m "not docker" -q
+
+sandbox:
+  stage: sandbox
+  # Docker-in-Docker: the sandbox container runs inside the job's own Docker daemon.
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - apk add --no-cache python3 py3-pip git
+    - python3 -m venv /venv && . /venv/bin/activate
+    - pip install -q uv && uv pip install -e ".[dev]"
+  script:
+    - . /venv/bin/activate
+    - docker build -f docker/sandbox.Dockerfile -t ctfbench-sandbox:latest .
+    - pytest -m docker -q
+    - python -m ctfbench run configs/smoke.yaml
+  artifacts:
+    paths: [results/smoke/]
