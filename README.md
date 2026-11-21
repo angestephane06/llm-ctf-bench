@@ -5,6 +5,8 @@ command executed inside a throw-away, network-less Docker sandbox.
 
 [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
+![Dashboard: model comparison, then the replay of an episode solved in four commands](docs/dashboard.gif)
+
 ## Problem
 
 Measuring whether a language-model agent can carry out offensive-security work raises two
